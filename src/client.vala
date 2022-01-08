@@ -58,8 +58,8 @@ namespace WaybarBatteryModule {
         }
 
         // When anything updates (percentage, state, update-time, etc...)
-        void device_notify (ParamSpec p) {
-            // stdout.printf ("CHANGED: %s\n", p.get_name ());
+        void device_notify (Object device, ParamSpec p) {
+            print_state ();
         }
 
         void print_state () {
