@@ -33,7 +33,6 @@ namespace WaybarBatteryModule {
             up_client.device_removed.connect ((device_path) => {
                 devices.get (device_path).notify.disconnect (device_notify);
                 devices.unset (device_path);
-                // stdout.printf ("DEVICE REMVOED! %s\n", device_path);
 
                 this.display_device = up_client.get_display_device ();
 
