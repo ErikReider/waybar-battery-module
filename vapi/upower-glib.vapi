@@ -15,11 +15,7 @@ namespace Up {
         public unowned string get_daemon_version ();
 
         [CCode (cname = "up_client_get_devices")]
-        [Version (deprecated = true, deprecated_since = "0.99.8", since = "0.9.0")]
         public GLib.GenericArray<Up.Device> get_devices ();
-
-        [CCode (cname = "up_client_get_devices2")]
-        public GLib.GenericArray<Up.Device> get_devices2 ();
 
         [CCode (cname = "up_client_get_display_device")]
         public Up.Device get_display_device ();
