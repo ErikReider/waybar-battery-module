@@ -25,7 +25,9 @@ namespace WaybarBatteryModule {
                 devices.set (device.get_object_path (), device);
                 device.notify.connect (device_notify);
 
+                this.display_device->notify.disconnect (device_notify);
                 this.display_device = up_client.get_display_device ();
+                this.display_device->notify.connect (device_notify);
 
                 print_state ();
             });
@@ -34,7 +36,9 @@ namespace WaybarBatteryModule {
                 devices.get (device_path).notify.disconnect (device_notify);
                 devices.unset (device_path);
 
+                this.display_device->notify.disconnect (device_notify);
                 this.display_device = up_client.get_display_device ();
+                this.display_device->notify.connect (device_notify);
 
                 print_state ();
             });
@@ -66,32 +70,58 @@ namespace WaybarBatteryModule {
                 this.display_device->kind == Up.DeviceKind.BATTERY ||
                 this.display_device->kind == Up.DeviceKind.UPS;
 
-            double percent = display_device->percentage;
-            percent += 0.5;
+
+            int percent = (int) (display_device->percentage + 0.5);
             string percent_string = display_device_valid ?
-                                    ((int) percent).to_string () + "%" :
+                                    percent.to_string () + "%" :
                                     "";
 
             string tooltip = "";
             foreach (Up.Device device in devices.values) {
-                if (device.kind == Up.DeviceKind.LINE_POWER) continue;
+                if (device.kind == Up.DeviceKind.LINE_POWER
+                    || device.native_path == "BAT0") continue;
                 tooltip += @"$(device.model) - $(device.percentage)%\\n";
             }
             // Remove last \n
-            tooltip = tooltip.slice (0, -2);
+            if (tooltip.length > 0) tooltip = tooltip.slice (0, -2);
 
             // Device level string
-            Up.DeviceLevel level = (Up.DeviceLevel) display_device->battery_level;
-            if (!display_device_valid || level == Up.DeviceLevel.UNKNOWN) {
-                level = Up.DeviceLevel.NONE;
+            string device_level = "";
+            switch (display_device->state) {
+                case Up.DeviceState.CHARGING:
+                case Up.DeviceState.PENDING_CHARGE:
+                    device_level = "charging-" + get_bat_percent (percent);
+                    break;
+                case Up.DeviceState.EMPTY:
+                case Up.DeviceState.FULLY_CHARGED:
+                case Up.DeviceState.DISCHARGING:
+                case Up.DeviceState.PENDING_DISCHARGE:
+                    device_level = get_bat_percent (percent);
+                    break;
+                default:
+                    device_level = "missing";
+                    break;
             }
-            string device_level = Up.Device.level_to_string (level);
 
             print ("{\"text\": \"%s\", \"alt\": \"%s\", \"tooltip\": \"%s\", \"class\": \"%s\"}\n",
                    percent_string,
                    device_level,
                    tooltip,
                    device_level);
+        }
+
+        string get_bat_percent (int percent) {
+            if (percent < 10) {
+                return "empty";
+            } else if (percent < 40) {
+                return "low";
+            } else if (percent < 60) {
+                return "half";
+            } else if (percent < 90) {
+                return "high";
+            } else {
+                return "full";
+            }
         }
     }
 }

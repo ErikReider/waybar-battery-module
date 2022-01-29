@@ -11,92 +11,22 @@
   "modules-right": [],
   "custom/baty": {
     "escape": true,
-    "format": "{icon} {}",
+    "format": " {icon} {}",
     "format-icons": {
-        "none": "ee",
-        "discharging": "",
-        "critical": "",
-        "action": "",
-        "low": "",
-        "normal": "",
-        "high": "",
-        "full": ""
+        "missing": "",
+        "empty": "",
+        "low": "",
+        "half": "",
+        "high": "",
+        "full": "",
+        "charging-empty": " ",
+        "charging-low": " ",
+        "charging-half": " ",
+        "charging-high": " ",
+        "charging-full": " "
     },
     "tooltip": true,
     "return-type": "json",
     "exec": "~/Git/waybar-battery-module/build/waybar-battery-module"
-  },
-  "custom/media": {
-    "escape": true,
-    "format": " {icon}{}",
-    "return-type": "json",
-    "format-icons": {
-      "Playing": " ",
-      "Paused": " "
-    },
-    "max-length": 35,
-    "exec": "playerctl metadata --format '{\"text\": \"{{title}}\", \"tooltip\": \"{{playerName}} : {{title}}\", \"alt\": \"{{status}}\", \"class\": \"{{status}}\"}' -F",
-    "on-click": "playerctl play-pause"
-  },
-  "custom/notification": {
-    "tooltip": false,
-    "format": " <span rise='1000'>{}<span foreground='red'><sup>{icon}</sup></span></span> ",
-    "format-icons": {
-      "noti": ""
-    },
-    "return-type": "json",
-    "exec-if": "which swaync",
-    "exec": "swaync-client -s | ~/.config/waybar/scripts/swaync-client.sh",
-    "on-click": "swaync-client -t -sw",
-    "on-click-right": "swaync-client -d -sw",
-    "escape": true
-  },
-  "custom/usingMic": {
-    "format": "{icon}",
-    "format-icons": {
-      "RUNNING": "  "
-    },
-    "return-type": "json",
-    "exec-if": "which sway-audio-idle-inhibit",
-    "exec": "sway-audio-idle-inhibit --dry-print-source | xargs -I {} echo '{\"text\": \"{}\", \"tooltip\": \"\", \"alt\": \"{}\", \"class\": \"{}\"}'",
-    "escape": true
-  },
-  "custom/usingAudio": {
-    "format": "{icon}",
-    "format-icons": {
-      "RUNNING": "  "
-    },
-    "return-type": "json",
-    "exec-if": "which sway-audio-idle-inhibit",
-    "exec": "sway-audio-idle-inhibit --dry-print-sink | xargs -I {} echo '{\"text\": \"{}\", \"tooltip\": \"\", \"alt\": \"{}\", \"class\": \"{}\"}'",
-    "escape": true
-  },
-  "custom/weather": {
-    "format": "<span font_family='Weather Icons'>{icon}</span> {}",
-    "format-icons": {
-      "01d": "",
-      "01n": "",
-      "02d": "",
-      "02n": "",
-      "03d": "",
-      "03n": "",
-      "04d": "",
-      "04n": "",
-      "09d": "",
-      "09n": "",
-      "10d": "",
-      "10n": "",
-      "11d": "",
-      "11n": "",
-      "13d": "",
-      "13n": "",
-      "50d": "",
-      "50n": ""
-    },
-    "tooltip": false,
-    "interval": 1200,
-    "exec": "python ~/.config/waybar/scripts/openWeatherMap.py",
-    "return-type": "json",
-    "escape": true
   }
 }
