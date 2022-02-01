@@ -8,7 +8,8 @@ namespace WaybarBatteryModule {
         MainLoop loop = new MainLoop ();
 
         Up.Client up_client = new Up.Client ();
-        HashMap<string, unowned Up.Device> devices = new HashMap<string, unowned Up.Device>();
+        HashMap<string, unowned Up.Device> devices =
+            new HashMap<string, unowned Up.Device>();
         Up.Device * display_device = new Up.Device ();
 
         public Client (Login1 login1) {
@@ -33,7 +34,10 @@ namespace WaybarBatteryModule {
             });
 
             up_client.device_removed.connect ((device_path) => {
-                devices.get (device_path).notify.disconnect (device_notify);
+                unowned Up.Device ? device = devices.get (device_path);
+                if (device != null) {
+                    device.notify.disconnect (device_notify);
+                }
                 devices.unset (device_path);
 
                 this.display_device->notify.disconnect (device_notify);
@@ -48,11 +52,9 @@ namespace WaybarBatteryModule {
             loop.run ();
         }
 
+        /** Removes and readds all devices incase anything new changed */
         void reset_devices () {
-            foreach (string device_path in devices.keys) {
-                up_client.device_removed (device_path);
-            }
-            // Add all devices
+            devices.clear ();
             foreach (Up.Device device in up_client.get_devices ()) {
                 up_client.device_added (device);
             }
