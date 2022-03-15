@@ -31,7 +31,10 @@ namespace WaybarBatteryModule {
             if (remove) {
                 if (!devices.contains (device_path)) return;
 
-                devices.get (device_path).notify.disconnect (device_notify);
+                unowned Up.Device ? device = devices.get (device_path);
+                if (device != null) {
+                    device.notify.disconnect (device_notify);
+                }
                 devices.remove (device_path);
             }
 
