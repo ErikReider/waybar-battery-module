@@ -19,7 +19,6 @@ sources = [
 
 app_deps = [
   dependency('gio-2.0', version: '>= 2.50'),
-  dependency('gee-0.8'),
   dependency('upower-glib', version: '>= 0.99.11'),
 ]
 

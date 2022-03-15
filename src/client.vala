@@ -1,14 +1,12 @@
-using Gee;
-
 namespace WaybarBatteryModule {
-
     public class Client {
         private Login1 login1;
 
         MainLoop loop = new MainLoop ();
 
         Up.Client up_client = new Up.Client ();
-        HashMap<string, unowned Up.Device> devices = new HashMap<string, unowned Up.Device>();
+        HashTable<string, unowned Up.Device> devices =
+            new HashTable<string, unowned Up.Device>(str_hash, str_equal);
         Up.Device * display_device = new Up.Device ();
 
         public Client (Login1 login1) {
@@ -21,46 +19,55 @@ namespace WaybarBatteryModule {
                 reset_devices ();
             });
 
-            up_client.device_added.connect ((device) => {
-                devices.set (device.get_object_path (), device);
-                device.notify.connect (device_notify);
-
-                this.display_device->notify.disconnect (device_notify);
-                this.display_device = up_client.get_display_device ();
-                this.display_device->notify.connect (device_notify);
-
-                print_state ();
-            });
-
-            up_client.device_removed.connect ((device_path) => {
-                devices.get (device_path).notify.disconnect (device_notify);
-                devices.unset (device_path);
-
-                this.display_device->notify.disconnect (device_notify);
-                this.display_device = up_client.get_display_device ();
-                this.display_device->notify.connect (device_notify);
-
-                print_state ();
-            });
+            up_client.device_added.connect (this.add_device);
+            up_client.device_removed.connect ((d) => this.remove_device (d));
 
             reset_devices ();
 
             loop.run ();
         }
 
-        void reset_devices () {
-            foreach (string device_path in devices.keys) {
-                up_client.device_removed (device_path);
+        void remove_device (string device_path, bool remove = true) {
+            if (remove) {
+                if (!devices.contains (device_path)) return;
+
+                devices.get (device_path).notify.disconnect (device_notify);
+                devices.remove (device_path);
             }
+
+            this.display_device->notify.disconnect (device_notify);
+            this.display_device = up_client.get_display_device ();
+            this.display_device->notify.connect (device_notify);
+
+            print_state ();
+        }
+
+        void add_device (Up.Device device) {
+            devices.set (device.get_object_path (), device);
+            device.notify.connect (device_notify);
+
+            this.display_device->notify.disconnect (device_notify);
+            this.display_device = up_client.get_display_device ();
+            this.display_device->notify.connect (device_notify);
+
+            print_state ();
+        }
+
+        /** Removes all devices and adds the current devices */
+        void reset_devices () {
+            devices.foreach_remove ((device_path, device) => {
+                this.remove_device (device_path, false);
+                return true;
+            });
             // Add all devices
             foreach (Up.Device device in up_client.get_devices ()) {
-                up_client.device_added (device);
+                this.add_device (device);
             }
 
             print_state ();
         }
 
-        // When anything updates (percentage, state, update-time, etc...)
+        /** When anything updates (percentage, state, update-time, etc...) */
         void device_notify (Object device, ParamSpec p) {
             print_state ();
         }
@@ -77,8 +84,9 @@ namespace WaybarBatteryModule {
                                     "";
 
             string tooltip = "";
-            foreach (Up.Device device in devices.values) {
-                if (device.kind == Up.DeviceKind.LINE_POWER
+            foreach (unowned Up.Device device in devices.get_values ()) {
+                if (device == null
+                    || device.kind == Up.DeviceKind.LINE_POWER
                     || device.native_path == "BAT0") continue;
                 tooltip += @"$(device.model) - $(device.percentage)%\\n";
             }
